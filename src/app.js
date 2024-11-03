@@ -38,6 +38,18 @@ app.delete("/user",async (req,res)=>{
     }
 })
 
+app.delete("/user/name",async (req,res)=>{
+    const name = req.body.firstName;
+    try{
+        const users = await user.deleteOne({firstName:name});
+        res.send({result:"successfully deleted data from DB !!!"});
+    }
+    catch(err){
+        res.status(404).send({result:"data not found" + err.message});
+    }
+})
+
+
 app.patch("/user",async (req,res)=>{
     const Id = req.body.userId;
     const data = req.body;
