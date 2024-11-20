@@ -1,19 +1,63 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const user = require("./model/user");
+const {validateData} = require("./utils/validate");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
 
+
+app.post("/login",async (req,res)=>{
+    const data = req.body;
+
+    try{
+        const{emailId,password} = data;
+
+    const User = await user.findOne({emailId:emailId});
+
+    if(!User){
+        throw new Error("Invalid credentials");
+    }
+
+    const isCorrectPass = await bcrypt.compare(password,User.password);
+
+    if(isCorrectPass){
+        res.send({result:"login successfull !!!"});
+    }
+    else{
+        throw new Error("Invalid credentials");
+    }
+  } catch (err){
+    res.status(400).send({result:"something went wrong : " + err.message});
+  }
+})
+
 app.post("/signup",async (req,res)=>{
-    const dummy = new user(req.body)
     const data = req.body;
     try{
-        if(data?.skills.length > 10){
+        // validate our data
+        validateData(req);
+
+        const {firstName,lastName,password,emailId} = data;
+
+        // hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        console.log(hashedPassword);
+
+        const User = new user({
+            firstName,
+            lastName,
+            emailId,
+            password:hashedPassword
+        });
+
+        if(data?.skills?.length > 10){
             throw new Error(" No one can have more than 10 skills");
         }
-       await dummy.save();
+       await User.save();
        res.send({result:"successfully added data of new user in DB !!!"});
     }
     catch(err){

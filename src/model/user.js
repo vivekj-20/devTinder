@@ -30,8 +30,7 @@ const useSchema = new Schema({
     password:{
         type: String,
         trim:true,
-        minLength:1,
-        maxLength:50,
+        required:true,
         validate(value){
             if(!validator.isStrongPassword(value)){
                 throw new Error("password is not strong");
