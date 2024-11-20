@@ -8,7 +8,11 @@ app.use(express.json());
 
 app.post("/signup",async (req,res)=>{
     const dummy = new user(req.body)
+    const data = req.body;
     try{
+        if(data?.skills.length > 10){
+            throw new Error(" No one can have more than 10 skills");
+        }
        await dummy.save();
        res.send({result:"successfully added data of new user in DB !!!"});
     }
@@ -50,15 +54,28 @@ app.delete("/user/name",async (req,res)=>{
 })
 
 
-app.patch("/user",async (req,res)=>{
-    const Id = req.body.userId;
+app.patch("/user/:userId",async (req,res)=>{
+    const Id = req.params?.userId;
     const data = req.body;
     try{
-        const users = await user.findByIdAndUpdate(Id,data);
+        const ALLOWED_UPDATE = ["firstName","lastName","password","gender","skills"];
+
+        const isUpdateAllowed = Object.keys(data).every((k)=>ALLOWED_UPDATE.includes(k));
+
+        if(!isUpdateAllowed){
+           throw new Error(": update not allowed for some specific fields");  
+        }
+
+        if(data?.skills?.length > 10){
+            throw new Error("no one can have more than 10 skills");
+        }
+        await user.findByIdAndUpdate(Id,data,{
+                runValidators:true // to run validate function and check data values on update
+            });
         res.send({result:"successfully updated data in the DB !!!"});
     }
     catch(err){
-        res.status(404).send({result:"data not found" + err.message});
+        res.status(400).send({result:"failed to update data " + err.message});
     }
 })
 
