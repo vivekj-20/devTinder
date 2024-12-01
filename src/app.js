@@ -3,10 +3,14 @@ const connectDB = require("./config/database");
 const user = require("./model/user");
 const {validateData} = require("./utils/validate");
 const bcrypt = require("bcrypt");
+const cookie = require("cookie-parser");
+const auth = require("./middleware/auth");
+
 
 const app = express();
 
 app.use(express.json());
+app.use(cookie());
 
 
 app.post("/login",async (req,res)=>{
@@ -21,9 +25,13 @@ app.post("/login",async (req,res)=>{
         throw new Error("Invalid credentials");
     }
 
-    const isCorrectPass = await bcrypt.compare(password,User.password);
+    const isCorrectPass = await User.PasswordCheck(password);
 
     if(isCorrectPass){
+
+        const token = await User.getJWT();
+
+        res.cookie("token",token,{ expires: new Date(Date.now() + 7 * 3600000), httpOnly: true }); // for 7 day only
         res.send({result:"login successfull !!!"});
     }
     else{
@@ -33,6 +41,18 @@ app.post("/login",async (req,res)=>{
     res.status(400).send({result:"something went wrong : " + err.message});
   }
 })
+
+app.get("/profile",auth, async(req,res)=>{
+
+    const data = req.data;
+
+    try{
+        res.send(data);
+    } 
+    catch (err){
+    res.status(400).send({result:"something went wrong : " + err.message});
+  }
+});
 
 app.post("/signup",async (req,res)=>{
     const data = req.body;
@@ -96,7 +116,6 @@ app.delete("/user/name",async (req,res)=>{
         res.status(404).send({result:"data not found" + err.message});
     }
 })
-
 
 app.patch("/user/:userId",async (req,res)=>{
     const Id = req.params?.userId;

@@ -1,25 +1,26 @@
-const auth = (req,res,next)=>{
-    const isAuth = 2025;
-    const token = 2025;
-    
-    if(token != isAuth){
-        res.status(401).send({handeledErrorMessage:"unauthorised user"});
-    }
-    else{
-        next();
-    }
-}
+const cookie = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const user = require("../model/user");
 
-const adminAuth = (req,res,next)=>{
-    const isAuth = 2025;
-    const token = 2025;
-    
-    if(token != isAuth){
-        res.status(401).send({handeledErrorMessage:"unauthorised user"});
-    }
-    else{
-        next();
-    }
-}
+const auth = async (req,res,next)=>{
+    const{token} = req.cookies;
 
-module.exports={auth,adminAuth};
+        if(!token){
+            throw new Error("Invalid Token")
+        }
+
+        const decodedString = await jwt.verify(token,"GOJO@Node");
+
+        if(!decodedString){
+            throw new Error("Invalid Token")
+        }
+
+        const data = await user.findById(decodedString);
+        
+        if(!data){
+            throw new Error("No user found !!!");
+        }
+        req.data = data;
+        next();
+}
+module.exports= auth;
