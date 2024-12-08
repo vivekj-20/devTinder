@@ -5,22 +5,26 @@ const user = require("../model/user");
 const auth = async (req,res,next)=>{
     const{token} = req.cookies;
 
-        if(!token){
-            throw new Error("Invalid Token")
+        try{
+            if(!token){
+                throw new Error("Invalid Token")
+            }
+    
+            const decodedString = await jwt.verify(token,"GOJO@Node");
+    
+            if(!decodedString){
+                throw new Error("Invalid Token")
+            }
+    
+            const data = await user.findById(decodedString);
+            
+            if(!data){
+                throw new Error("No user found !!!");
+            }
+            req.data = data;
+            next();
+        }catch(err){
+            res.status(404).send({result:"data not found " + err.message});
         }
-
-        const decodedString = await jwt.verify(token,"GOJO@Node");
-
-        if(!decodedString){
-            throw new Error("Invalid Token")
-        }
-
-        const data = await user.findById(decodedString);
-        
-        if(!data){
-            throw new Error("No user found !!!");
-        }
-        req.data = data;
-        next();
 }
 module.exports= auth;
