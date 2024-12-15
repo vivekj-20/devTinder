@@ -2,6 +2,7 @@ const express = require("express");
 const profileRouter = express.Router();
 const user = require("../model/user");
 const auth = require("../middleware/auth");
+const bcrypt = require("bcrypt");
 
 profileRouter.get("/profile",auth, async(req,res)=>{
 
@@ -62,10 +63,14 @@ profileRouter.patch("/user/:userId",async (req,res)=>{
         if(data?.skills?.length > 10){
             throw new Error("no one can have more than 10 skills");
         }
+        if(data.password != null){
+            hashedPassword = await bcrypt.hash(data.password, 10);
+            data.password = hashedPassword;
+        }
         await user.findByIdAndUpdate(Id,data,{
                 runValidators:true // to run validate function and check data values on update
             });
-        res.send({result:"successfully updated data in the DB !!!"});
+        res.send({result:"successfully updated data in the DB !!!"});   
     }
     catch(err){
         res.status(400).send({result:"failed to update data " + err.message});
