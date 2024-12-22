@@ -4,6 +4,7 @@ const cookie = require("cookie-parser");
 const { authRouter } = require("./router/authRouter");
 const { profileRouter } = require("./router/profileRouter");
 const { requestRouter } = require("./router/requestRouter");
+const { userRouter } = require("./router/userRouter");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cookie());
 app.use("/",authRouter);
 app.use("/",profileRouter);
 app.use("/",requestRouter);
+app.use("/", userRouter);
 
 
 connectDB().then(()=>{
