@@ -44,8 +44,6 @@ authRouter.post("/signup",async (req,res)=>{
         // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        console.log(hashedPassword);
-
         const User = new user({
             firstName,
             lastName,

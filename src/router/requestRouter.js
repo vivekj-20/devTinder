@@ -4,17 +4,6 @@ const connectionRequest = require("../model/connectionRequest");
 const auth = require("../middleware/auth");
 const requestRouter = express.Router();
 
-
-requestRouter.get("/feed",async (req,res)=>{
-    try{
-        const users = await user.find({}); 
-        res.send(users);
-    }
-    catch(err){
-        res.status(404).send({result:"data not found" + err.message});
-    }
-});
-
 requestRouter.post("/request/send/:status/:toUserId",auth,async(req,res)=>{
     try{
 
@@ -78,9 +67,6 @@ requestRouter.post("/request/review/:status/:requestId",auth,async(req,res)=>{
             .status(400)
             .json({ message: "Invalid status type: " + status });  
         }
-
-        console.log(loggedInUser._id);
-        console.log(requestId);
 
         const connectionRequeststatus = await connectionRequest.findOne({
             status:"interested",
