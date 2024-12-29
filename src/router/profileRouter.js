@@ -48,20 +48,61 @@ profileRouter.delete("/user/name",async (req,res)=>{
     }
 })
 
-profileRouter.patch("/user/:userId",async (req,res)=>{
+profileRouter.patch("/profile/edit", auth, async (req, res) => {
+    try {
+      // Validate allowed fields to update
+      const allowedEditFields = [
+        "firstName",
+        "lastName",
+        "emailId",
+        "photoUrl",
+        "gender",
+        "age",
+        "about",
+        "skills",
+      ];
+  
+      const isEditAllowed = Object.keys(req.body).every((field) =>
+        allowedEditFields.includes(field)
+      );
+  
+      if (!isEditAllowed) {
+        throw new Error("Invalid Edit Request");
+      }
+  
+      // Find the logged-in user based on the data from auth middleware
+      const loggedInUser = await user.findById(req.data._id);  // Find user by ID from the decoded token
+  
+      if (!loggedInUser) {
+        return res.status(404).send({ result: "User not found" });
+      }
+  
+      // Update the user's profile with the fields provided in the request body
+      Object.keys(req.body).forEach((key) => {
+        loggedInUser[key] = req.body[key];
+      });
+      // Save the updated user back to the database
+      await loggedInUser.save();
+  
+      res.json({
+        message: `${loggedInUser.firstName}, your profile was updated successfully`,
+        payload: loggedInUser,
+      });
+    } catch (err) {
+      res.status(400).send("ERROR: " + err.message);
+    }
+  });
+
+  profileRouter.patch("/user/password/:userId",async (req,res)=>{
     const Id = req.params?.userId;
     const data = req.body;
     try{
-        const ALLOWED_UPDATE = ["firstName","lastName","password","gender","skills"];
+        const ALLOWED_UPDATE = ["password"];
 
         const isUpdateAllowed = Object.keys(data).every((k)=>ALLOWED_UPDATE.includes(k));
 
         if(!isUpdateAllowed){
            throw new Error(": update not allowed for some specific fields");  
-        }
-
-        if(data?.skills?.length > 10){
-            throw new Error("no one can have more than 10 skills");
         }
         if(data.password != null){
             hashedPassword = await bcrypt.hash(data.password, 10);
@@ -76,5 +117,6 @@ profileRouter.patch("/user/:userId",async (req,res)=>{
         res.status(400).send({result:"failed to update data " + err.message});
     }
 })
+  
 
 module.exports = {profileRouter};

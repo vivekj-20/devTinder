@@ -61,7 +61,15 @@ const useSchema = new Schema({
         type:[String],
         default:"JavaScript",
         trim:true,
-    }
+    },
+    photoUrl:{
+        type: String,
+        trim:true,
+    },
+    about:{
+        type: String,
+        trim:true,
+    },
 },{
     timestamps:true,
 });

@@ -23,13 +23,13 @@ authRouter.post("/login",async (req,res)=>{
         const token = await User.getJWT();
 
         res.cookie("token",token,{ expires: new Date(Date.now() + 7 * 3600000), httpOnly: true }); // for 7 day only
-        res.send({result:"login successfull !!!"});
+        res.send({result:User});
     }
     else{
-        throw new Error("Invalid credentials");
+       res.status(401).send({result:"Invalid credentials"});
     }
   } catch (err){
-    res.status(400).send({result:"something went wrong : " + err.message});
+    res.status(401).send({result:"something went wrong : " + err.message});
   }
 })
 
