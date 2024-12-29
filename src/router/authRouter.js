@@ -54,8 +54,12 @@ authRouter.post("/signup",async (req,res)=>{
         if(data?.skills?.length > 10){
             throw new Error(" No one can have more than 10 skills");
         }
-       await User.save();
-       res.send({result:"successfully added data of new user in DB !!!"});
+
+        const token = await User.getJWT();
+
+        res.cookie("token",token,{ expires: new Date(Date.now() + 7 * 3600000), httpOnly: true }); // for 7 day only
+        await User.save();
+        res.json({result:"successfully added data of new user in DB !!!",data:User});
     }
     catch(err){
        res.status(400).send({result:"something went wrong :( .. error in adding data to DB" + err.message});
