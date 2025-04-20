@@ -5,7 +5,8 @@ const { authRouter } = require("./router/authRouter");
 const { profileRouter } = require("./router/profileRouter");
 const { requestRouter } = require("./router/requestRouter");
 const { userRouter } = require("./router/userRouter");
-const cors = require('cors')
+const cors = require('cors');
+require('dotenv').config();
 
 
 const app = express();
@@ -19,14 +20,14 @@ app.use(cors({
 
 
 app.use("/",authRouter);
-app.use("/",profileRouter);
+app.use("/",profileRouter); 
 app.use("/",requestRouter);
 app.use("/", userRouter);
 
 
 connectDB().then(()=>{
     console.log("DB connected successfully !!!")
-    app.listen(7777,()=>{
+    app.listen(process.env.PORT,()=>{
         console.log("Server is up , Please send your request");
     });
 }).catch((err)=>{
